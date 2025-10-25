@@ -29,7 +29,7 @@ namespace KwikNesta.Property.Svc.Domain.Enums
         Retail = 21,
         [Description("Warehouse")]
         Warehouse = 22,
-        [Description("Industrial Property")]
+        [Description("Industrial RealEstateProperty")]
         Industrial = 23,
         [Description("Co-Working Space")]
         CoWorkingSpace = 24,

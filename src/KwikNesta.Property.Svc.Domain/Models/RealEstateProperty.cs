@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KwikNesta.Property.Svc.Domain.Models
 {
-    public class Property : BaseEntity
+    public class RealEstateProperty : BaseEntity
     {
         [Required, MaxLength(200)]
         public string Title { get; set; } = string.Empty;

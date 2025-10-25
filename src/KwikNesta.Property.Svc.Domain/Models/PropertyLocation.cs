@@ -18,6 +18,6 @@ namespace KwikNesta.Property.Svc.Domain.Models
         public double? Longitude { get; set; }
 
         // Navigation
-        public ICollection<Property> Properties { get; set; } = [];
+        public ICollection<RealEstateProperty> Properties { get; set; } = [];
     }
 }

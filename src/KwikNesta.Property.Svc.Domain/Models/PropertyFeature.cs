@@ -15,6 +15,6 @@ namespace KwikNesta.Property.Svc.Domain.Models
         public bool HasElectricity { get; set; }
 
         // Navigation
-        public ICollection<Property> Properties { get; set; } = [];
+        public ICollection<RealEstateProperty> Properties { get; set; } = [];
     }
 }

@@ -7,7 +7,7 @@ namespace KwikNesta.Property.Svc.Domain.Models
     public class ViewingRequest : BaseEntity
     {
         public Guid PropertyId { get; set; }
-        public Property Property { get; set; } = default!;
+        public RealEstateProperty Property { get; set; } = default!;
 
         [Required]
         public string RequestedById { get; set; } = string.Empty;
