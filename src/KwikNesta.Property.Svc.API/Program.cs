@@ -1,25 +1,27 @@
+using DiagnosKit.Core.Logging;
+using DiagnosKit.Core.Logging.Contracts;
+using DiagnosKit.Core.Middlewares;
+using KwikNesta.Property.Svc.API.Extensions;
+using KwikNesta.Property.Svc.Application;
+using KwikNesta.Property.Svc.Infrastructure;
+
+SerilogBootstrapper.UseBootstrapLogger();
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services
+    .RegisterApiServices(builder.Configuration)
+    .RegisterInfraServices(builder.Configuration)
+    .RegisterAppServices(builder.Configuration);
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (!builder.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    builder.Host.ConfigureESSink(builder.Configuration);
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
+var app = builder.Build();
+var logger = app.Services.GetRequiredService<ILoggerManager>();
+app.UseDiagnosKitExceptionHandler(logger);
+app.UseMiddlewares(builder.Configuration);
 
 app.Run();
