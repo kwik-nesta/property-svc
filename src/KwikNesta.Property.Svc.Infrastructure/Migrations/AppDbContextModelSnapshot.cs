@@ -61,48 +61,15 @@ namespace KwikNesta.Property.Svc.Infrastructure.Migrations
                     b.Property<DateTime?>("LastUpdatedOn")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Toilets")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PropertyFeatures", "property-svc");
-                });
-
-            modelBuilder.Entity("KwikNesta.Property.Svc.Domain.Models.PropertyImage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsCover")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeprecated")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("LastUpdatedOn")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<Guid>("PropertyId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("PublicId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("PropertyId");
+                    b.HasIndex("PropertyId")
+                        .IsUnique();
 
-                    b.ToTable("PropertyImages", "property-svc");
+                    b.ToTable("PropertyFeatures", "property-svc");
                 });
 
             modelBuilder.Entity("KwikNesta.Property.Svc.Domain.Models.PropertyLocation", b =>
@@ -146,6 +113,9 @@ namespace KwikNesta.Property.Svc.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("State")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -153,7 +123,50 @@ namespace KwikNesta.Property.Svc.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PropertyId")
+                        .IsUnique();
+
                     b.ToTable("PropertyLocations", "property-svc");
+                });
+
+            modelBuilder.Entity("KwikNesta.Property.Svc.Domain.Models.PropertyMedia", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsCover")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeprecated")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("LastUpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PublicId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PropertyId");
+
+                    b.ToTable("PropertyMedia", "property-svc");
                 });
 
             modelBuilder.Entity("KwikNesta.Property.Svc.Domain.Models.RealEstateProperty", b =>
@@ -174,17 +187,11 @@ namespace KwikNesta.Property.Svc.Infrastructure.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
-                    b.Property<Guid>("FeatureId")
-                        .HasColumnType("uuid");
-
                     b.Property<bool>("IsDeprecated")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("LastUpdatedOn")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("OwnerId")
                         .IsRequired()
@@ -207,10 +214,6 @@ namespace KwikNesta.Property.Svc.Infrastructure.Migrations
                         .HasColumnType("varchar(20)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("FeatureId");
-
-                    b.HasIndex("LocationId");
 
                     b.ToTable("Properties", "property-svc");
                 });
@@ -258,34 +261,37 @@ namespace KwikNesta.Property.Svc.Infrastructure.Migrations
                     b.ToTable("ViewingRequests", "property-svc");
                 });
 
-            modelBuilder.Entity("KwikNesta.Property.Svc.Domain.Models.PropertyImage", b =>
+            modelBuilder.Entity("KwikNesta.Property.Svc.Domain.Models.PropertyFeature", b =>
                 {
                     b.HasOne("KwikNesta.Property.Svc.Domain.Models.RealEstateProperty", "Property")
-                        .WithMany("Images")
-                        .HasForeignKey("PropertyId")
+                        .WithOne("Feature")
+                        .HasForeignKey("KwikNesta.Property.Svc.Domain.Models.PropertyFeature", "PropertyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Property");
                 });
 
-            modelBuilder.Entity("KwikNesta.Property.Svc.Domain.Models.RealEstateProperty", b =>
+            modelBuilder.Entity("KwikNesta.Property.Svc.Domain.Models.PropertyLocation", b =>
                 {
-                    b.HasOne("KwikNesta.Property.Svc.Domain.Models.PropertyFeature", "Feature")
-                        .WithMany("Properties")
-                        .HasForeignKey("FeatureId")
+                    b.HasOne("KwikNesta.Property.Svc.Domain.Models.RealEstateProperty", "Property")
+                        .WithOne("Location")
+                        .HasForeignKey("KwikNesta.Property.Svc.Domain.Models.PropertyLocation", "PropertyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("KwikNesta.Property.Svc.Domain.Models.PropertyLocation", "Location")
-                        .WithMany("Properties")
-                        .HasForeignKey("LocationId")
+                    b.Navigation("Property");
+                });
+
+            modelBuilder.Entity("KwikNesta.Property.Svc.Domain.Models.PropertyMedia", b =>
+                {
+                    b.HasOne("KwikNesta.Property.Svc.Domain.Models.RealEstateProperty", "Property")
+                        .WithMany("Media")
+                        .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Feature");
-
-                    b.Navigation("Location");
+                    b.Navigation("Property");
                 });
 
             modelBuilder.Entity("KwikNesta.Property.Svc.Domain.Models.ViewingRequest", b =>
@@ -299,19 +305,15 @@ namespace KwikNesta.Property.Svc.Infrastructure.Migrations
                     b.Navigation("Property");
                 });
 
-            modelBuilder.Entity("KwikNesta.Property.Svc.Domain.Models.PropertyFeature", b =>
-                {
-                    b.Navigation("Properties");
-                });
-
-            modelBuilder.Entity("KwikNesta.Property.Svc.Domain.Models.PropertyLocation", b =>
-                {
-                    b.Navigation("Properties");
-                });
-
             modelBuilder.Entity("KwikNesta.Property.Svc.Domain.Models.RealEstateProperty", b =>
                 {
-                    b.Navigation("Images");
+                    b.Navigation("Feature")
+                        .IsRequired();
+
+                    b.Navigation("Location")
+                        .IsRequired();
+
+                    b.Navigation("Media");
 
                     b.Navigation("ViewingRequests");
                 });

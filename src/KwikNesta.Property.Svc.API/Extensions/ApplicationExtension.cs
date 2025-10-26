@@ -1,5 +1,6 @@
-﻿using DiagnosKit.Core.Logging.Contracts;
-using Hangfire;
+﻿using Hangfire;
+using KwikNesta.Contracts.Filters;
+using KwikNesta.Contracts.Settings;
 using KwikNesta.Property.Svc.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +23,7 @@ namespace KwikNesta.Property.Svc.API.Extensions
 
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseHangfireDashboard(configuration);
 
             app.RunMigrations(true);
             app.MapControllers();
@@ -38,7 +40,7 @@ namespace KwikNesta.Property.Svc.API.Extensions
             return app;
         }
 
-        internal static WebApplication RunMigrations(this WebApplication app, bool alwayRun = false)
+        private static WebApplication RunMigrations(this WebApplication app, bool alwayRun = false)
         {
             if (app.Environment.IsDevelopment() || alwayRun)
             {
@@ -46,6 +48,23 @@ namespace KwikNesta.Property.Svc.API.Extensions
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 db.Database.Migrate();
             }
+
+            return app;
+        }
+
+        private static WebApplication UseHangfireDashboard(this WebApplication app, IConfiguration configuration)
+        {
+            var settings = configuration.GetSection("HangfireSettings")
+                .Get<HangfireSettings>() ?? throw new ArgumentNullException("HangfireSettings");
+
+            app.UseHangfireDashboard("/admin/jobs", new DashboardOptions
+            {
+                Authorization = new[] { new HangfireAuthFilter(settings) },
+                DashboardTitle = "Kwik Nesta Property Svc",
+                DisplayStorageConnectionString = false,
+                DisplayNameFunc = (_, job) => job.Method.Name,
+                DarkModeEnabled = true,
+            });
 
             return app;
         }

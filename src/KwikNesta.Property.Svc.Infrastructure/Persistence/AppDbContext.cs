@@ -7,7 +7,7 @@ namespace KwikNesta.Property.Svc.Infrastructure.Persistence
         public DbSet<RealEstateProperty> Properties => Set<RealEstateProperty>();
         public DbSet<PropertyLocation> PropertyLocations => Set<PropertyLocation>();
         public DbSet<PropertyFeature> PropertyFeatures => Set<PropertyFeature>();
-        public DbSet<PropertyImage> PropertyImages => Set<PropertyImage>();
+        public DbSet<PropertyMedia> PropertyMedia => Set<PropertyMedia>();
         public DbSet<ViewingRequest> ViewingRequests => Set<ViewingRequest>();
 
         public AppDbContext(DbContextOptions<AppDbContext> options) 

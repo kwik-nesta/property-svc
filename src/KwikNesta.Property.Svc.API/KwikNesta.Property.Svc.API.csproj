@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -16,10 +16,6 @@
   <ItemGroup>
     <ProjectReference Include="..\KwikNesta.Property.Svc.Application\KwikNesta.Property.Svc.Application.csproj" />
     <ProjectReference Include="..\KwikNesta.Property.Svc.Infrastructure\KwikNesta.Property.Svc.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>

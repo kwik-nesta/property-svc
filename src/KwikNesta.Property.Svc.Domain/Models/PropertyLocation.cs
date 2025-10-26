@@ -1,9 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KwikNesta.Property.Svc.Domain.Models
 {
     public class PropertyLocation : BaseEntity
     {
+        [Required]
+        public Guid PropertyId { get; set; }
+        [ForeignKey(nameof(PropertyId))]
+        public RealEstateProperty Property { get; set; } = default!;
+
         [Required, MaxLength(100)]
         public string AddressLine { get; set; } = string.Empty;
         [Required, StringLength(100)]
@@ -14,10 +20,7 @@ namespace KwikNesta.Property.Svc.Domain.Models
         public string Country { get; set; } = "Nigeria";
         [Required, MaxLength(100)]
         public string PostalCode { get; set; } = string.Empty;
-        public double? Latitude { get; set; }
-        public double? Longitude { get; set; }
-
-        // Navigation
-        public ICollection<RealEstateProperty> Properties { get; set; } = [];
+        public string? Latitude { get; set; }
+        public string? Longitude { get; set; }
     }
 }

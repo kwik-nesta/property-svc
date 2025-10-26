@@ -20,19 +20,14 @@ namespace KwikNesta.Property.Svc.Domain.Models
         [Required]
         [EnumDataType(typeof(ListingStatus))]
         [Column(TypeName = "varchar(20)")]
-        public ListingStatus Status { get; set; } = ListingStatus.Pending;
-
-        // Relations
-        public Guid LocationId { get; set; }
-        public PropertyLocation Location { get; set; } = default!;
-
-        public Guid FeatureId { get; set; }
-        public PropertyFeature Feature { get; set; } = default!;
-
-        public ICollection<PropertyImage> Images { get; set; } = [];
-        public ICollection<ViewingRequest> ViewingRequests { get; set; } = [];
+        public ListingStatus Status { get; set; } = ListingStatus.Draft;
 
         // Relationships
         public string OwnerId { get; set; } = string.Empty;
+
+        public PropertyLocation Location { get; set; } = default!;
+        public PropertyFeature Feature { get; set; } = default!;
+        public ICollection<PropertyMedia> Media { get; set; } = [];
+        public ICollection<ViewingRequest> ViewingRequests { get; set; } = [];
     }
 }
