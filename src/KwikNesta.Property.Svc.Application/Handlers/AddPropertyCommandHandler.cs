@@ -56,13 +56,18 @@ namespace KwikNesta.Property.Svc.Application.Handlers
 
             var country = countryResponse.Content;
             var state = country.States.FirstOrDefault(s => s.CountryId == country.Id);
+            if(state == null)
+            {
+                throw new NotFoundException("State data is required.");
+            }
+
             if (string.IsNullOrWhiteSpace(request.Location?.Latitude) || 
                 string.IsNullOrWhiteSpace(request.Location?.Longitude))
             {
-                request.Location!.Longitude = state?.Longitude;
-                request.Location!.Latitude = state?.Latitude;
+                request.Location!.Longitude = state.Longitude ?? country.Longitude;
+                request.Location!.Latitude = state.Latitude ?? country.Latitude;
             }
-            var property = request.Map(userId, country.Name, state?.Name ?? "");
+            var property = request.Map(userId, country.Name, state.Name);
             await _repository.Property.CreateAsync(property);
 
             await _rabbitMQ.PublishAsync(new AuditCommand
