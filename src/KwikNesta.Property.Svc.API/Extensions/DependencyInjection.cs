@@ -1,4 +1,5 @@
 ﻿using DiagnosKit.Core.Configurations;
+using DiagnosKit.Core.Extensions;
 using KwikNesta.Contracts.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +21,8 @@ namespace KwikNesta.Property.Svc.API.Extensions
                 .ConfigureSwagger()
                 .ConfigureApiVersion()
                 .ConfigureJwt(configuration)
-                .ConfigureCors(configuration);
+                .ConfigureCors(configuration)
+                .AddLoggerManager();
             return services;
         }
 

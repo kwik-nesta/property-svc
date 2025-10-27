@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KwikNesta.Property.Svc.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251026170046_Initial_Create")]
+    [Migration("20251027012707_Initial_Create")]
     partial class Initial_Create
     {
         /// <inheritdoc />
@@ -105,11 +105,11 @@ namespace KwikNesta.Property.Svc.Infrastructure.Migrations
                     b.Property<DateTime?>("LastUpdatedOn")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double?>("Latitude")
-                        .HasColumnType("double precision");
+                    b.Property<string>("Latitude")
+                        .HasColumnType("text");
 
-                    b.Property<double?>("Longitude")
-                        .HasColumnType("double precision");
+                    b.Property<string>("Longitude")
+                        .HasColumnType("text");
 
                     b.Property<string>("PostalCode")
                         .IsRequired()

@@ -78,8 +78,8 @@ namespace KwikNesta.Property.Svc.Infrastructure.Migrations
                     State = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Country = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     PostalCode = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Latitude = table.Column<double>(type: "double precision", nullable: true),
-                    Longitude = table.Column<double>(type: "double precision", nullable: true),
+                    Latitude = table.Column<string>(type: "text", nullable: true),
+                    Longitude = table.Column<string>(type: "text", nullable: true),
                     IsDeprecated = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     LastUpdatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)

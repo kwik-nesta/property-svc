@@ -38,8 +38,7 @@ namespace KwikNesta.Property.Svc.API.Controllers.V1
         /// Upload video/images for the property
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="video"></param>
-        /// <param name="images"></param>
+        /// <param name="uploadRequest"></param>
         /// <returns></returns>
         [HttpPatch("{id}")]
         [Authorize(Roles = "LandLord")]
@@ -49,13 +48,12 @@ namespace KwikNesta.Property.Svc.API.Controllers.V1
         [ProducesResponseType(typeof(ApiResult<string>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResult<string>), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UploadMedia([FromRoute] Guid id, 
-                                                     [FromForm] IFormFile video, 
-                                                     [FromForm] IFormFileCollection images)
+                                                     [FromForm] PropertyUploadRequest uploadRequest)
             => Ok(await _mediator.SendAsync(new UploadPropertyMediaCommand
             {
                 PropertyId = id,
-                Video = video,
-                Images = images
+                Video = uploadRequest.Video,
+                Images = uploadRequest.Images
             }));
     }
 }
