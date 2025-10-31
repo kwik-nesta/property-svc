@@ -54,12 +54,10 @@ namespace KwikNesta.Property.Svc.Application.Handlers
                 throw new NotFoundException(countryResponse.Error?.Message ?? "There was an error getting location data.");
             }
 
-            var country = countryResponse.Content;
-            var state = country.States.FirstOrDefault(s => s.CountryId == country.Id);
-            if(state == null)
-            {
-                throw new NotFoundException("State data is required.");
-            }
+            var country = countryResponse.Content.Data ?? 
+                throw new NotFoundException("Country record not found");
+            var state = country.States.FirstOrDefault(s => s.CountryId == country.Id) ?? 
+                throw new NotFoundException("State record not found");
 
             if (string.IsNullOrWhiteSpace(request.Location?.Latitude) || 
                 string.IsNullOrWhiteSpace(request.Location?.Longitude))
