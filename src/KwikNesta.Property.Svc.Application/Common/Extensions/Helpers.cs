@@ -52,7 +52,8 @@ namespace KwikNesta.Property.Svc.Application.Common.Extensions
                 Bathrooms = command.Features!.Bathrooms,
                 HasElectricity = command.Features!.HasElectricity,
                 HasParking = command.Features!.HasParking,
-                HasWaterSupply = command.Features!.HasWaterSupply
+                HasWaterSupply = command.Features!.HasWaterSupply,
+                Bedrooms = command.Features!.Bedrooms
             };
 
             return property;
