@@ -1,0 +1,30 @@
+﻿using KwikNesta.Property.Svc.Application.Common.Interfaces;
+using KwikNesta.Property.Svc.Infrastructure.Persistence;
+using KwikNesta.Property.Svc.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace KwikNesta.Property.Svc.Infrastructure
+{
+    public static class DependencyInjection
+    {
+        public static IServiceCollection RegisterInfraServices(this IServiceCollection services,
+                                                          IConfiguration configuration)
+        {
+            services.AddScoped<IRepositoryManager, RepositoryManager>()
+                .ConfigureDbContext(configuration);
+
+            return services;
+        }
+
+        private static IServiceCollection ConfigureDbContext(this IServiceCollection services,
+                                                            IConfiguration configuration)
+        {
+            services.AddDbContext<AppDbContext>(options =>
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+
+            return services;
+        }
+    }
+}
