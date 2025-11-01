@@ -1,4 +1,5 @@
-﻿using DiagnosKit.Core.Configurations;
+﻿using Cloudtenary.Extensions;
+using DiagnosKit.Core.Configurations;
 using DiagnosKit.Core.Extensions;
 using KwikNesta.Contracts.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,6 +20,7 @@ namespace KwikNesta.Property.Svc.API.Extensions
             services.AddControllers();
             services.AddEndpointsApiExplorer()
                 .ConfigureSwagger()
+                .AddCloudtenary(configuration)
                 .ConfigureApiVersion()
                 .ConfigureJwt(configuration)
                 .ConfigureCors(configuration)
