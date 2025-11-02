@@ -97,5 +97,11 @@ namespace KwikNesta.Property.Svc.Application.Common.Extensions
 
             return (true, "Valid");
         }
+
+        public static string GetFileName(Guid entityId, string fileExtension)
+        {
+            var randomPart = Path.GetRandomFileName().Replace(".", "");
+            return $"{entityId:N}-{randomPart}{fileExtension}";
+        }
     }
 }

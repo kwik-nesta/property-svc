@@ -22,6 +22,8 @@ namespace KwikNesta.Property.Svc.Domain.Models
         [Column(TypeName = "varchar(20)")]
         public ListingStatus Status { get; set; } = ListingStatus.Draft;
 
+        public bool IsLocked { get; set; }
+
         // Relationships
         public string OwnerId { get; set; } = string.Empty;
 

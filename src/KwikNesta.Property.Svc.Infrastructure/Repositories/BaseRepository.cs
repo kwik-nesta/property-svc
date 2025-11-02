@@ -41,6 +41,15 @@ namespace KwikNesta.Property.Svc.Infrastructure.Repositories
                 await SaveAsync();
         }
 
+        public async Task AddRangeAsync(List<T> entities, 
+                                        bool saveNow = true,
+                                        CancellationToken token = default)
+        {
+            await _dbSet.AddRangeAsync(entities, token);
+            if (saveNow)
+                await SaveAsync(token);
+        }
+
         public async Task Update(T entity, bool saveNow = true)
         {
             _dbSet.Update(entity);

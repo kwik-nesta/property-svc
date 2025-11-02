@@ -3,6 +3,7 @@
     public interface IRepositoryManager
     {
         IPropertyRepository Property {  get; }
+        IPropertyMediaRepository PropertyMedia { get; }
 
         Task<bool> SaveAsync(CancellationToken cancellation = default);
     }
