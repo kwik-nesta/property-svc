@@ -273,8 +273,9 @@ namespace KwikNesta.Property.Svc.Infrastructure.Services
                 property.Status = ListingStatus.Available;
                 property.LastUpdatedOn = DateTime.UtcNow;
                 property.IsCoordinatesSent = true;
-                await _repository.Property
-                    .UpdateAsync(property);
+                property.IsLocked = false;
+
+                await _repository.Property.UpdateAsync(property);
                 context.WriteLine("Property details successfully verified.");
 
                 //TODO: Notify the Owner
@@ -284,13 +285,13 @@ namespace KwikNesta.Property.Svc.Infrastructure.Services
                 property.Status = ListingStatus.VerificationFailed;
                 property.LastUpdatedOn = DateTime.UtcNow;
                 property.VerificationReasons = Reasons;
+                property.IsLocked = false;
                 if (!Verified)
                 {
                     property.Status = ListingStatus.VerificationFailed;
                 }
 
-                await _repository.Property
-                    .UpdateAsync(property);
+                await _repository.Property.UpdateAsync(property);
                 context.WriteLine("Property details verification failed. Reasons: {0}", Reasons);
                 //TODO: Notify the owner
             }

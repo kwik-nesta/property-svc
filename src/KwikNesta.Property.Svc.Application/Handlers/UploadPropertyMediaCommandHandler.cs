@@ -114,17 +114,16 @@ namespace KwikNesta.Property.Svc.Application.Handlers
                 videoFilePath = videoPath;
             }
 
+            property.IsLocked = true;
+            property.LastUpdatedOn = DateTime.UtcNow;
+            await _repository.Property.UpdateAsync(property);
+
             var jobId = BackgroundJob.Enqueue<IPropertyService>(u 
                 => u.UploadPropertyMediaAsync(imageFilePaths, videoFilePath, property.Id, null!));
 
             BackgroundJob.ContinueJobWith<IPropertyService>(jobId,
                     ps => ps.VerifyPropertyDetails(property.Id, null!),
                     JobContinuationOptions.OnlyOnSucceededState);
-
-            property.IsLocked = true;
-            property.LastUpdatedOn = DateTime.UtcNow;
-            await _repository.Property
-                .UpdateAsync(property);
             return new ApiResult<string>("Media files are being uploaded. You'll be notified when complete.");
         }
     }
