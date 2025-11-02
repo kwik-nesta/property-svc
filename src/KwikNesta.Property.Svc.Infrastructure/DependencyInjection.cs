@@ -15,7 +15,7 @@ namespace KwikNesta.Property.Svc.Infrastructure
         {
             services.AddScoped<IRepositoryManager, RepositoryManager>()
                 .AddScoped<IServiceManager, ServiceManager>()
-                .AddScoped<IUploadService, UploadService>()
+                .AddScoped<IPropertyService, PropertyService>()
                 .ConfigureDbContext(configuration);
 
             return services;

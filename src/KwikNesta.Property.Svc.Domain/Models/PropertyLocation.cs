@@ -22,5 +22,6 @@ namespace KwikNesta.Property.Svc.Domain.Models
         public string PostalCode { get; set; } = string.Empty;
         public string? Latitude { get; set; }
         public string? Longitude { get; set; }
+        public bool IsVerified { get; set; }
     }
 }

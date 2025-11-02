@@ -2,6 +2,6 @@
 {
     public interface IServiceManager
     {
-        IUploadService Upload {  get; }
+        IPropertyService Upload {  get; }
     }
 }
