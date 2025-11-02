@@ -2,7 +2,6 @@
 using Cloudtenary.Models;
 using CrossQueue.Hub.Services.Interfaces;
 using CSharpTypes.Extensions.Enumeration;
-using Hangfire;
 using Hangfire.Console;
 using Hangfire.Server;
 using KwikNesta.Contracts.Commands;
@@ -78,7 +77,7 @@ namespace KwikNesta.Property.Svc.Infrastructure.Services
                     uploadTasks.Add(_cloudtenary.UploadImageAsync(Path.GetFileName(imageFilePath),
                         Path.GetFileName(imageFilePath),
                         imageStream,
-                        overlayText: $"© {DateTime.UtcNow.Year} Kwik Nesta"));
+                        overlayText: $"Kwik Nesta"));
                 }
 
                 if (!string.IsNullOrEmpty(videoFilePath) && existingVideo == null)
@@ -91,7 +90,7 @@ namespace KwikNesta.Property.Svc.Infrastructure.Services
                         videoStream.Position = 0;
                         uploadTasks.Add(_cloudtenary.UploadVideoAsync(Path.GetFileName(videoFilePath),
                             videoStream,
-                            overlayText: $"© {DateTime.UtcNow.Year} Kwik Nesta"));
+                            overlayText: $"Kwik Nesta"));
                     }
                     else
                     {

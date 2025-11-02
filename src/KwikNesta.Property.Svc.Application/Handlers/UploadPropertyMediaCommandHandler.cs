@@ -1,11 +1,8 @@
 ﻿using API.Common.Response.Model.Exceptions;
 using Cloudtenary.Abstract;
 using CrossQueue.Hub.Services.Interfaces;
-using CSharpTypes.Extensions.Enumeration;
 using CSharpTypes.Extensions.Guid;
 using Hangfire;
-using KwikNesta.Contracts.Commands;
-using KwikNesta.Contracts.Enums;
 using KwikNesta.Contracts.Models;
 using KwikNesta.Mediatrix.Core.Abstractions;
 using KwikNesta.Property.Svc.Application.Commands;
@@ -15,7 +12,6 @@ using KwikNesta.Property.Svc.Application.Common.Models.Enums;
 using KwikNesta.Property.Svc.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace KwikNesta.Property.Svc.Application.Handlers
 {
