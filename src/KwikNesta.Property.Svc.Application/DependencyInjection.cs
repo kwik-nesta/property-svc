@@ -115,6 +115,14 @@ namespace KwikNesta.Property.Svc.Application
                     c.Timeout = TimeSpan.FromSeconds(120);
                 }).AddHttpMessageHandler(() => new ServiceRefitWakeUpHandler());
 
+            services.AddRefitClient<IReverseGeocodeService>(refitSettings)
+                .ConfigureHttpClient(c =>
+                {
+                    c.BaseAddress = new Uri("https://nominatim.openstreetmap.org");
+                    c.Timeout = TimeSpan.FromSeconds(60);
+                    c.DefaultRequestHeaders.UserAgent.ParseAdd("KwikNesta-Inc/1.0");
+                });
+
             return services;
         }
 

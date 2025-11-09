@@ -4,11 +4,11 @@ using CrossQueue.Hub.Services.Interfaces;
 using CSharpTypes.Extensions.Enumeration;
 using CSharpTypes.Extensions.List;
 using CSharpTypes.Extensions.Object;
-using Hangfire;
 using Hangfire.Console;
 using Hangfire.Server;
 using KwikNesta.Contracts.Commands;
 using KwikNesta.Contracts.Enums;
+using KwikNesta.Contracts.Models;
 using KwikNesta.Property.Svc.Application.Common.Interfaces;
 using KwikNesta.Property.Svc.Domain.Enums;
 using KwikNesta.Property.Svc.Domain.Models;
@@ -20,17 +20,19 @@ namespace KwikNesta.Property.Svc.Infrastructure.Services
         private readonly ICloudtenary _cloudtenary;
         private readonly IRepositoryManager _repository;
         private readonly IRabbitMQPubSub _rabbitMQ;
-
+        private readonly IReverseGeocodeService _reverseGeocode;
         private static readonly string[] StockSources = 
             { "shutterstock", "pexels", "unsplash", "istockphoto", "gettyimages" };
 
         public PropertyService(ICloudtenary cloudtenary,
                              IRepositoryManager repository,
-                             IRabbitMQPubSub rabbitMQ)
+                             IRabbitMQPubSub rabbitMQ,
+                             IReverseGeocodeService reverseGeocode)
         {
             _cloudtenary = cloudtenary;
             _repository = repository;
             _rabbitMQ = rabbitMQ;
+            _reverseGeocode = reverseGeocode;
         }
 
         public async Task UploadPropertyMediaAsync(List<string> imageFilePaths,
@@ -160,6 +162,11 @@ namespace KwikNesta.Property.Svc.Infrastructure.Services
                 await _repository.PropertyMedia
                     .AddRangeAsync(mediaToAdd);
 
+                await _rabbitMQ.PublishAsync(PropertyNotificationEvent.Init(property.OwnerId,
+                    property.Title, PropertyNotificationType.Updated),
+                    routingKey: MQRoutingKey.PropertyNotification.GetDescription());
+
+
                 context.WriteLine("Added {0} images and {1} video files for {2}",
                     imageResults.Count,
                     videoResult != null ? 1 : 0,
@@ -230,7 +237,9 @@ namespace KwikNesta.Property.Svc.Infrastructure.Services
                     .UpdateAsync(property);
                 context.WriteLine("Property ownership successfully verified.");
 
-                //TODO: Notify the Owner
+                await _rabbitMQ.PublishAsync(PropertyNotificationEvent.Init(property.OwnerId,
+                    property.Title, PropertyNotificationType.DocumentApproved),
+                    routingKey: MQRoutingKey.PropertyNotification.GetDescription());
             }
             else
             {
@@ -241,7 +250,9 @@ namespace KwikNesta.Property.Svc.Infrastructure.Services
                 await _repository.Property
                     .UpdateAsync(property);
                 context.WriteLine("Property ownership verification failed. Reasons: {0}", Reasons);
-                //TODO: Notify the owner
+                await _rabbitMQ.PublishAsync(PropertyNotificationEvent.Init(property.OwnerId,
+                    property.Title, PropertyNotificationType.DocumentRejected),
+                    routingKey: MQRoutingKey.PropertyNotification.GetDescription());
             }
 
             await _rabbitMQ.PublishAsync(new AuditCommand
@@ -278,7 +289,9 @@ namespace KwikNesta.Property.Svc.Infrastructure.Services
                 await _repository.Property.UpdateAsync(property);
                 context.WriteLine("Property details successfully verified.");
 
-                //TODO: Notify the Owner
+                await _rabbitMQ.PublishAsync(PropertyNotificationEvent.Init(property.OwnerId,
+                    property.Title, PropertyNotificationType.AutoVerified),
+                    routingKey: MQRoutingKey.PropertyNotification.GetDescription());
             }
             else
             {
@@ -294,6 +307,9 @@ namespace KwikNesta.Property.Svc.Infrastructure.Services
                 await _repository.Property.UpdateAsync(property);
                 context.WriteLine("Property details verification failed. Reasons: {0}", Reasons);
                 //TODO: Notify the owner
+                await _rabbitMQ.PublishAsync(PropertyNotificationEvent.Init(property.OwnerId,
+                    property.Title, PropertyNotificationType.VerificationFailed),
+                    routingKey: MQRoutingKey.PropertyNotification.GetDescription());
             }
 
             await _rabbitMQ.PublishAsync(new AuditCommand
@@ -330,7 +346,7 @@ namespace KwikNesta.Property.Svc.Infrastructure.Services
             var reasonList = new List<string>();
             var hasAllDetails = HasRequiredFields(property);
             var hasMedia = HasEnoughMediaFiles(property.Media);
-            var hasValidLocation = HasValidLocation(property.IsCoordinatesSent, property.Location);
+            var hasValidLocation = await HasValidLocation(property.IsCoordinatesSent, property.Location);
             if (hasAllDetails && hasMedia && hasValidLocation)
             {
                 return (true, reasons);
@@ -367,26 +383,48 @@ namespace KwikNesta.Property.Svc.Infrastructure.Services
                 .ToList().Count >= 3;
         }
 
-        private static bool HasValidLocation(bool coordinateSent, PropertyLocation location)
+        private async Task<bool> HasValidLocation(bool coordinateSent, PropertyLocation location)
         {
-            var resultAddress = string.Empty;
-            // AddressLine, City, State, Country, PostalCode, Verify Coord and city is equal with provided city, and address keywords match
             var isVerified = coordinateSent && location != null &&
                 !string.IsNullOrWhiteSpace(location.AddressLine) && 
                 !string.IsNullOrWhiteSpace(location.City) && 
                 !string.IsNullOrWhiteSpace(location.State) && 
                 !string.IsNullOrWhiteSpace(location.Country) && 
-                !string.IsNullOrWhiteSpace(location.PostalCode) && 
-                resultAddress.Contains(location.City);
+                !string.IsNullOrWhiteSpace(location.PostalCode) &&
+                !string.IsNullOrWhiteSpace(location.Longitude) &&
+                !string.IsNullOrWhiteSpace(location.Latitude);
 
             if(isVerified && location != null)
             {
-                location.IsVerified = true;
-                location.LastUpdatedOn = DateTime.UtcNow;
-                //TODO: Save location
+                if(!string.IsNullOrWhiteSpace(location.Longitude) &&
+                !string.IsNullOrWhiteSpace(location.Latitude))
+                {
+                    var reverseGeocodeResult = await _reverseGeocode
+                        .ReverseGeocoder(location.Latitude, location.Longitude);
+                    if(reverseGeocodeResult.IsSuccessStatusCode && reverseGeocodeResult.Content != null)
+                    {
+                        var content = reverseGeocodeResult.Content;
+                        var displayAddress = content.DisplayName;
+                        if(displayAddress.Contains(location.City) || displayAddress.Contains(location.State))
+                        {
+                            location.IsVerified = true;
+                            if (reverseGeocodeResult.Content.Address != null)
+                            {
+                                location.PostalCode = reverseGeocodeResult.Content.Address.PostCode;
+                            }
+
+                            location.Latitude = reverseGeocodeResult.Content.Latitude;
+                            location.Longitude = reverseGeocodeResult.Content.Longitude;
+                            location.LastUpdatedOn = DateTime.UtcNow;
+
+                            await _repository.PropertyLocation.UpdateAsync(location);
+                            return true;
+                        }
+                    }
+                }
             }
 
-            return isVerified;
+            return false;
         }
     }
 }

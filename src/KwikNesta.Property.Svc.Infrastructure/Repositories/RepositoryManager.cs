@@ -7,6 +7,7 @@ namespace KwikNesta.Property.Svc.Infrastructure.Repositories
     {
         private readonly Lazy<IPropertyRepository> _propertyRepository;
         private readonly Lazy<IPropertyMediaRepository> _propertyMediaRepository;
+        private readonly Lazy<IPropertyLocationRepository> _propertyLocationRepository;
 
         private readonly AppDbContext _context;
 
@@ -18,10 +19,13 @@ namespace KwikNesta.Property.Svc.Infrastructure.Repositories
                 => new PropertyRepository(context));
             _propertyMediaRepository = new Lazy<IPropertyMediaRepository>(()
                 => new PropertyMediaRepository(context));
+            _propertyLocationRepository = new Lazy<IPropertyLocationRepository>(() 
+                => new PropertyLocationRepository(context));
         }
 
         public IPropertyRepository Property => _propertyRepository.Value;
         public IPropertyMediaRepository PropertyMedia => _propertyMediaRepository.Value;
+        public IPropertyLocationRepository PropertyLocation => _propertyLocationRepository.Value;
 
         public async Task<bool> SaveAsync(CancellationToken cancellation = default) =>
             await _context.SaveChangesAsync(cancellation) > 0;
