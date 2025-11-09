@@ -10,10 +10,11 @@ namespace KwikNesta.Property.Svc.Infrastructure.Services
 
         public ServiceManager(ICloudtenary cloudtenary,
                               IRepositoryManager repository,
-                              IRabbitMQPubSub rabbitMQ)
+                              IRabbitMQPubSub rabbitMQ,
+                              IReverseGeocodeService reverseGeocode)
         {
             _uploadService = new Lazy<IPropertyService>(() =>
-                new PropertyService(cloudtenary, repository, rabbitMQ));
+                new PropertyService(cloudtenary, repository, rabbitMQ, reverseGeocode));
         }
 
         public IPropertyService Upload => _uploadService.Value;
