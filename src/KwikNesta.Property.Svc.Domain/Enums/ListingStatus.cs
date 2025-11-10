@@ -17,6 +17,8 @@ namespace KwikNesta.Property.Svc.Domain.Enums
         [Description("Withdrawn")]
         Withdrawn,
         [Description("Archived")]
-        Archived
+        Archived,
+        [Description("Verification Failed")]
+        VerificationFailed
     }
 }

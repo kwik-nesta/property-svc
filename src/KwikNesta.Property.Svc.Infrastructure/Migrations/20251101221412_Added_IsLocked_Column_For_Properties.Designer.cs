@@ -3,6 +3,7 @@ using System;
 using KwikNesta.Property.Svc.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KwikNesta.Property.Svc.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251101221412_Added_IsLocked_Column_For_Properties")]
+    partial class Added_IsLocked_Column_For_Properties
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,9 +100,6 @@ namespace KwikNesta.Property.Svc.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsDeprecated")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsVerified")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("LastUpdatedOn")
@@ -190,16 +190,10 @@ namespace KwikNesta.Property.Svc.Infrastructure.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
-                    b.Property<bool>("IsCoordinatesSent")
-                        .HasColumnType("boolean");
-
                     b.Property<bool>("IsDeprecated")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsLocked")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsOwnerShipVerified")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("LastUpdatedOn")
@@ -216,9 +210,6 @@ namespace KwikNesta.Property.Svc.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(20)");
 
-                    b.Property<string>("StatusReasons")
-                        .HasColumnType("text");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -227,9 +218,6 @@ namespace KwikNesta.Property.Svc.Infrastructure.Migrations
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("varchar(20)");
-
-                    b.Property<string>("VerificationReasons")
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

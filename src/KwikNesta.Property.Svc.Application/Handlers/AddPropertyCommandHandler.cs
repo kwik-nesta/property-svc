@@ -59,14 +59,20 @@ namespace KwikNesta.Property.Svc.Application.Handlers
             var state = country.States.FirstOrDefault(s => s.CountryId == country.Id) ?? 
                 throw new NotFoundException("State record not found");
 
+            var cordinateSent = true;
             if (string.IsNullOrWhiteSpace(request.Location?.Latitude) || 
                 string.IsNullOrWhiteSpace(request.Location?.Longitude))
             {
                 request.Location!.Longitude = state.Longitude ?? country.Longitude;
                 request.Location!.Latitude = state.Latitude ?? country.Latitude;
+                cordinateSent = false;
             }
-            var property = request.Map(userId, country.Name, state.Name);
+            var property = request.Map(userId, country.Name, state.Name, cordinateSent);
             await _repository.Property.CreateAsync(property);
+
+            await _rabbitMQ.PublishAsync(PropertyNotificationEvent.Init(property.OwnerId,
+                    property.Title, PropertyNotificationType.Created),
+                    routingKey: MQRoutingKey.PropertyNotification.GetDescription());
 
             await _rabbitMQ.PublishAsync(new AuditCommand
             {

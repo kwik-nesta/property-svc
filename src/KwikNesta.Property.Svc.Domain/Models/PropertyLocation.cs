@@ -19,8 +19,9 @@ namespace KwikNesta.Property.Svc.Domain.Models
         [Required, MaxLength(100)]
         public string Country { get; set; } = "Nigeria";
         [Required, MaxLength(100)]
-        public string PostalCode { get; set; } = string.Empty;
+        public string? PostalCode { get; set; } = string.Empty;
         public string? Latitude { get; set; }
         public string? Longitude { get; set; }
+        public bool IsVerified { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using DiagnosKit.Core.Configurations;
+using Cloudtenary.Extensions;
 using DiagnosKit.Core.Extensions;
 using KwikNesta.Contracts.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
+using Cloudtenary.Settings;
 
 namespace KwikNesta.Property.Svc.API.Extensions
 {
@@ -19,9 +21,19 @@ namespace KwikNesta.Property.Svc.API.Extensions
             services.AddControllers();
             services.AddEndpointsApiExplorer()
                 .ConfigureSwagger()
+                .AddCloudtenary(opt =>
+                {
+                    var settings = configuration.GetSection("CloudtenarySettings")
+                        .Get<CloudtenarySettings>() ?? throw new ArgumentNullException("CloudtenarySettings");
+
+                    opt.Secret = settings.Secret;
+                    opt.CloudName = settings.CloudName;
+                    opt.Key = settings.Key;
+                })
                 .ConfigureApiVersion()
                 .ConfigureJwt(configuration)
                 .ConfigureCors(configuration)
+                
                 .AddLoggerManager();
             return services;
         }

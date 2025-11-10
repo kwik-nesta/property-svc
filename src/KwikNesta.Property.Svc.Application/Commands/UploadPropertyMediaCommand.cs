@@ -7,7 +7,7 @@ namespace KwikNesta.Property.Svc.Application.Commands
     public class UploadPropertyMediaCommand : IKwikRequest<ApiResult<string>>
     {
         public Guid PropertyId { get; set; }
-        public IFormFileCollection? Images { get; set; }
+        public List<IFormFile> Images { get; set; } = [];
         public IFormFile? Video { get; set; }
     }
 }

@@ -21,6 +21,14 @@ namespace KwikNesta.Property.Svc.Domain.Models
         [EnumDataType(typeof(ListingStatus))]
         [Column(TypeName = "varchar(20)")]
         public ListingStatus Status { get; set; } = ListingStatus.Draft;
+        public string? StatusReasons { get; set; }
+
+        public bool IsLocked { get; set; }
+        public bool IsCoordinatesSent { get; set; }
+
+        public bool IsOwnerShipVerified { get; set; }
+        public string? VerificationReasons { get; set; }
+
 
         // Relationships
         public string OwnerId { get; set; } = string.Empty;

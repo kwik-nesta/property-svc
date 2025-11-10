@@ -17,12 +17,13 @@ namespace KwikNesta.Property.Svc.Application.Common.Extensions
             return location != null && 
                 !string.IsNullOrEmpty(location.Address) && 
                 !string.IsNullOrEmpty(location.City) && 
-                !string.IsNullOrEmpty(location.PostalCode) && 
+                //!string.IsNullOrEmpty(location.PostalCode) && 
                 location.CountryId != Guid.Empty && location.StateId != Guid.Empty;
         }
 
         public static RealEstateProperty Map(this AddPropertyCommand command, 
-                                             string userId, string country, string state)
+                                             string userId, string country, 
+                                             string state, bool cordinateSent)
         {
             var property = new RealEstateProperty
             {
@@ -31,7 +32,8 @@ namespace KwikNesta.Property.Svc.Application.Common.Extensions
                 Description = command.Description,
                 Price = command.Price,
                 Currency = command.Currency,
-                Type = command.Type
+                Type = command.Type,
+                IsCoordinatesSent = cordinateSent,
             };
 
             property.Location = new PropertyLocation
@@ -42,7 +44,7 @@ namespace KwikNesta.Property.Svc.Application.Common.Extensions
                 State = state,
                 Longitude = command.Location!.Longitude,
                 Latitude = command.Location!.Latitude,
-                PostalCode = command.Location!.PostalCode
+                PostalCode = command.Location!.PostalCode 
             };
 
             property.Feature = new PropertyFeature
@@ -96,6 +98,12 @@ namespace KwikNesta.Property.Svc.Application.Common.Extensions
             }
 
             return (true, "Valid");
+        }
+
+        public static string GetFileName(Guid entityId, string fileExtension)
+        {
+            var randomPart = Path.GetRandomFileName().Replace(".", "");
+            return $"{entityId:N}-{randomPart}{fileExtension}";
         }
     }
 }

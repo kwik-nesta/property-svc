@@ -1,9 +1,8 @@
 ﻿using API.Common.Response.Model.Exceptions;
+using Cloudtenary.Abstract;
 using CrossQueue.Hub.Services.Interfaces;
-using CSharpTypes.Extensions.Enumeration;
 using CSharpTypes.Extensions.Guid;
-using KwikNesta.Contracts.Commands;
-using KwikNesta.Contracts.Enums;
+using Hangfire;
 using KwikNesta.Contracts.Models;
 using KwikNesta.Mediatrix.Core.Abstractions;
 using KwikNesta.Property.Svc.Application.Commands;
@@ -20,14 +19,17 @@ namespace KwikNesta.Property.Svc.Application.Handlers
     {
         private readonly IRepositoryManager _repository;
         private readonly IRabbitMQPubSub _rabbitMQ;
+        private readonly ICloudtenary _cloudtenary;
         private readonly ClaimsPrincipal? _claim;
 
         public UploadPropertyMediaCommandHandler(IRepositoryManager repository,
                                                  IRabbitMQPubSub rabbitMQ,
-                                                 IHttpContextAccessor accessor)
+                                                 IHttpContextAccessor accessor,
+                                                 ICloudtenary cloudtenary)
         {
             _repository = repository;
             _rabbitMQ = rabbitMQ;
+            _cloudtenary = cloudtenary;
             _claim = accessor.HttpContext?.User;
         }
 
@@ -44,51 +46,85 @@ namespace KwikNesta.Property.Svc.Application.Handlers
                 throw new BadRequestException("Invalid request");
             }
 
-            if(request.Images == null || request.Images.Count == 0)
+            if (request.Images.Count == 0 && request.Video == null)
             {
-                throw new BadRequestException("Please select one or more images to upload");
+                throw new BadRequestException("Please select one or more files to upload");
             }
 
             var property = await _repository
-                .Property.GetAsync(request.PropertyId) ??
+                .Property.GetAsync(request.PropertyId, true) ??
                 throw new NotFoundException("No property record found for this Id");
 
-            foreach (var image in request.Images)
+            if(property.Media.Count > 0)
             {
-                var validator = image.IsAValidFile(UploadMediaType.Image);
-                if (!validator.Valid)
+                var imageCount = property.Media.Count(p => p.Type == MediaType.Image);
+                if(imageCount + request.Images.Count > 5)
                 {
-                    throw new BadRequestException(validator.Message);
+                    throw new BadRequestException($"You already have {imageCount} images uploaded for this property. Maximum upload per property is 5. Please select fewer images to upload or delete some to continue.");
+                }
+                if(property.Media.Any(m => m.Type == MediaType.Video) && request.Video != null)
+                {
+                    throw new BadRequestException("You've reached the maximum number of video upload allowed per property.");
                 }
             }
+
+            var uploadDirectory = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
+            if (!Directory.Exists(uploadDirectory))
+            {
+                Directory.CreateDirectory(uploadDirectory);
+            }
+
+            request.Images.ForEach(img =>
+            {
+                var (Valid, Message) = img.IsAValidFile(UploadMediaType.Image);
+                if (!Valid)
+                {
+                    throw new BadRequestException(Message);
+                }
+            });
 
             if(request.Video != null)
             {
-                var videoValidator = request.Video.IsAValidFile(UploadMediaType.Image);
-                if (!videoValidator.Valid)
+                var (Valid, Message) = request.Video.IsAValidFile(UploadMediaType.Video);
+                if (!Valid)
                 {
-                    throw new BadRequestException(videoValidator.Message);
+                    throw new BadRequestException(Message);
                 }
             }
 
-            //TODO: Upload the images and the video
-
-            property.LastUpdatedOn = DateTime.UtcNow;
-            property.Status = ListingStatus.Pending;
-            await _repository.Property
-                .UpdateAsync(property);
-
-            await _rabbitMQ.PublishAsync(new AuditCommand
+            var imageFilePaths = new List<string>();
+            foreach (var image in request.Images)
             {
-                Domain = AuditDomain.Property,
-                DomainId = property.Id,
-                Action = AuditAction.PropertyUpdated,
-                Description = "Media files uploaded",
-                PerformedBy = userId,
-                TargetId = property.Id.ToString()
-            }, routingKey: MQRoutingKey.AuditTrails.GetDescription());
+                var fileExtension = Path.GetExtension(image.FileName).ToLowerInvariant();
+                var fileName = Helpers.GetFileName(property.Id, fileExtension);
+                var filePath = Path.Combine(uploadDirectory, fileName);
+                using var stream = new FileStream(filePath, FileMode.Create);
+                await image.CopyToAsync(stream, cancellationToken);
+                imageFilePaths.Add(filePath);
+            }
 
-            return new ApiResult<string>("Media files successfully uploaded.");
+            var videoFilePath = string.Empty;
+            if(request.Video != null)
+            {
+                var videoExtension = Path.GetExtension(request.Video.FileName).ToLowerInvariant();
+                var videoFileName = Helpers.GetFileName(property.Id, videoExtension);
+                var videoPath = Path.Combine(uploadDirectory, videoFileName);
+                using var stream = new FileStream(videoPath, FileMode.Create);
+                await request.Video.CopyToAsync(stream, cancellationToken);
+                videoFilePath = videoPath;
+            }
+
+            property.IsLocked = true;
+            property.LastUpdatedOn = DateTime.UtcNow;
+            await _repository.Property.UpdateAsync(property);
+
+            var jobId = BackgroundJob.Enqueue<IPropertyService>(u 
+                => u.UploadPropertyMediaAsync(imageFilePaths, videoFilePath, property.Id, null!));
+
+            BackgroundJob.ContinueJobWith<IPropertyService>(jobId,
+                    ps => ps.VerifyPropertyDetails(property.Id, null!),
+                    JobContinuationOptions.OnlyOnSucceededState);
+            return new ApiResult<string>("Media files are being uploaded. You'll be notified when complete.");
         }
     }
 }
